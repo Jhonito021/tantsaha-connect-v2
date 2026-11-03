@@ -1,0 +1,6 @@
+{
+  "name": "Tantsaha Connect",
+  "description": "Fampiharana ho an'ny tantsaha malagasy: toetrandro, bokin'ny fambolena, fampitandremana ary torohevitra am-peo tsy mila aterineto.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
