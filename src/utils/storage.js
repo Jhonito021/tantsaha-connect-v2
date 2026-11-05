@@ -11,145 +11,9 @@ const STORAGE_KEYS = {
   THEME: 'tantsaha_theme_v1',
 };
 
-const DEFAULT_USERS = [
-  {
-    id: 'user-rakoto',
-    name: 'Rakoto',
-    phone: '034 12 345 67',
-    pin: '1234',
-    regionId: 'ambatondrazaka',
-    regionNameMg: 'Alaotra-Mangoro (Ambatondrazaka)',
-    regionNameFr: 'Alaotra-Mangoro (Ambatondrazaka)',
-    mainCrop: 'vary',
-    mainCropLabelMg: 'Vary (Makalioka)',
-    mainCropLabelFr: 'Riz (Makalioka)',
-    roleMg: 'Mpamboly vary (Riziculteur)',
-    roleFr: 'Riziculteur',
-    avatar: '🌾',
-    experience: '45 taona · CEPE',
-    registeredAt: 1730000000000,
-  },
-  {
-    id: 'user-mbolatiana',
-    name: 'Mbolatiana',
-    phone: '032 98 765 43',
-    pin: '1234',
-    regionId: 'antsirabe',
-    regionNameMg: 'Vakinankaratra (Antsirabe)',
-    regionNameFr: 'Vakinankaratra (Antsirabe)',
-    mainCrop: 'voatabia',
-    mainCropLabelMg: 'Legioma & Voatabia',
-    mainCropLabelFr: 'Maraîchage & Tomates',
-    roleMg: 'Mpamokatra legioma (Maraîchère)',
-    roleFr: 'Maraîchère',
-    avatar: '🍅',
-    experience: '31 taona · BEPC',
-    registeredAt: 1730100000000,
-  },
-];
-
-// Seed entries partitioned strictly per user
-const INITIAL_ENTRIES = [
-  // Rakoto's private farm entries (Riziculture Alaotra)
-  {
-    id: 'entry-rakoto-1',
-    userId: 'user-rakoto',
-    authorName: 'Rakoto',
-    type: 'semis',
-    cropId: 'vary',
-    cropNameMg: 'Vary (Makalioka)',
-    cropNameFr: 'Riz (Makalioka)',
-    date: '2026-11-01',
-    quantity: '2',
-    unit: 'Sobika / Dobo',
-    notes: 'Ketsa tanora SRI 10 andro amin\'ny tanimbary atsinanana. Rano mitsika tsara.',
-    parcelName: 'Tanimbary Atsinanana (Alaotra)',
-    createdAt: Date.now() - 86400000 * 4,
-  },
-  {
-    id: 'entry-rakoto-2',
-    userId: 'user-rakoto',
-    authorName: 'Rakoto',
-    type: 'pluie',
-    date: '2026-11-03',
-    rainfallMm: 28,
-    notes: 'Orana malefaka naharitra adiny telo. Ampy rano ny tanimbary rehetra.',
-    parcelName: 'Lemaka Alaotra',
-    createdAt: Date.now() - 86400000 * 2,
-  },
-  {
-    id: 'entry-rakoto-3',
-    userId: 'user-rakoto',
-    authorName: 'Rakoto',
-    type: 'recolte',
-    cropId: 'vary',
-    cropNameMg: 'Vary (Makalioka)',
-    cropNameFr: 'Riz (Makalioka)',
-    date: '2026-10-22',
-    quantity: '35',
-    unit: 'Gony (Sacs)',
-    notes: 'Vokatra tsara kalitao avy amin\'ny tanimbary avaradrano.',
-    parcelName: 'Tanimbary Avaratra',
-    createdAt: Date.now() - 86400000 * 14,
-  },
-
-  // Mbolatiana's private farm entries (Maraîchage Vakinankaratra)
-  {
-    id: 'entry-mbolatiana-1',
-    userId: 'user-mbolatiana',
-    authorName: 'Mbolatiana',
-    type: 'semis',
-    cropId: 'voatabia',
-    cropNameMg: 'Voatabia (Roma)',
-    cropNameFr: 'Tomate (Roma)',
-    date: '2026-10-28',
-    quantity: '1',
-    unit: 'Tari-doko (parcelle)',
-    notes: 'Zana-boatabia nafindra amin\'ny tany efa nasiana zezika kintana sy tain\'omby.',
-    parcelName: 'Saha Afovoany (Antsirabe)',
-    createdAt: Date.now() - 86400000 * 8,
-  },
-  {
-    id: 'entry-mbolatiana-2',
-    userId: 'user-mbolatiana',
-    authorName: 'Mbolatiana',
-    type: 'parasite',
-    cropId: 'voatabia',
-    cropNameMg: 'Voatabia',
-    cropNameFr: 'Tomate',
-    date: '2026-10-31',
-    severity: 'mora',
-    notes: 'Fisorohana aretina bobongolo (mildiou): nofafazana ranom-paraky natoraly.',
-    parcelName: 'Saha Avaratra',
-    createdAt: Date.now() - 86400000 * 5,
-  },
-  {
-    id: 'entry-mbolatiana-3',
-    userId: 'user-mbolatiana',
-    authorName: 'Mbolatiana',
-    type: 'recolte',
-    cropId: 'tsaramaso',
-    cropNameMg: 'Tsaramaso',
-    cropNameFr: 'Haricot',
-    date: '2026-10-25',
-    quantity: '6',
-    unit: 'Gony (Sacs)',
-    notes: 'Vokatra voa maina tsara tsy misy bibikely na lavaka.',
-    parcelName: 'Lemaka Katsaka sy Tsaramaso',
-    createdAt: Date.now() - 86400000 * 11,
-  },
-  {
-    id: 'entry-mbolatiana-4',
-    userId: 'user-mbolatiana',
-    authorName: 'Mbolatiana',
-    type: 'pluie',
-    date: '2026-11-02',
-    rainfallMm: 16,
-    notes: 'Orana malefaka maraina, tsara ho an\'ny legioma maitso.',
-    parcelName: 'Saha Atsimo',
-    createdAt: Date.now() - 86400000 * 3,
-  },
-];
+// Demo accounts removed - only genuine user accounts are stored
+const DEFAULT_USERS = [];
+const INITIAL_ENTRIES = [];
 
 export const storage = {
   // USER ACCOUNTS & AUTH
@@ -157,13 +21,21 @@ export const storage = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.USERS);
       if (!data) {
-        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
-        return DEFAULT_USERS;
+        return [];
       }
       const parsed = JSON.parse(data);
-      return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_USERS;
+      if (!Array.isArray(parsed)) return [];
+
+      // Purge demo accounts (Rakoto & Mbolatiana) if still present in storage
+      const cleaned = parsed.filter(
+        (u) => u && u.id !== 'user-rakoto' && u.id !== 'user-mbolatiana'
+      );
+      if (cleaned.length !== parsed.length) {
+        this.saveUsers(cleaned);
+      }
+      return cleaned;
     } catch {
-      return DEFAULT_USERS;
+      return [];
     }
   },
 
@@ -179,7 +51,12 @@ export const storage = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
       if (data) {
-        return JSON.parse(data);
+        const user = JSON.parse(data);
+        if (user && (user.id === 'user-rakoto' || user.id === 'user-mbolatiana')) {
+          this.setCurrentUser(null);
+          return null;
+        }
+        return user;
       }
       return null;
     } catch {
@@ -376,12 +253,24 @@ export const storage = {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.JOURNAL);
       if (!data) {
-        localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(INITIAL_ENTRIES));
-        return INITIAL_ENTRIES;
+        return [];
       }
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed)) return [];
+
+      // Purge demo entries
+      const cleaned = parsed.filter(
+        (entry) =>
+          entry &&
+          entry.userId !== 'user-rakoto' &&
+          entry.userId !== 'user-mbolatiana'
+      );
+      if (cleaned.length !== parsed.length) {
+        this.saveEntries(cleaned);
+      }
+      return cleaned;
     } catch {
-      return INITIAL_ENTRIES;
+      return [];
     }
   },
 
@@ -390,8 +279,9 @@ export const storage = {
     const all = this.getAllEntries();
     if (!userId) {
       const current = this.getCurrentUser();
-      userId = current?.id || 'user-rakoto';
+      userId = current?.id;
     }
+    if (!userId) return [];
     return all.filter((entry) => entry.userId === userId);
   },
 
@@ -411,7 +301,7 @@ export const storage = {
   addEntry(entry, currentUser = null) {
     const allEntries = this.getAllEntries();
     const user = currentUser || this.getCurrentUser();
-    const targetUserId = user?.id || 'user-rakoto';
+    const targetUserId = user?.id || ('user-' + Date.now());
     const targetAuthorName = user?.name || 'Tantsaha';
 
     const newEntry = {
@@ -436,10 +326,15 @@ export const storage = {
     localStorage.removeItem(STORAGE_KEYS.JOURNAL);
   },
 
+  clearCurrentUserEntries(userId) {
+    if (!userId) return;
+    const allEntries = this.getAllEntries().filter((e) => e.userId !== userId);
+    this.saveEntries(allEntries);
+  },
+
   resetToDemo() {
-    localStorage.setItem(STORAGE_KEYS.JOURNAL, JSON.stringify(INITIAL_ENTRIES));
-    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(DEFAULT_USERS));
-    this.setCurrentUser(DEFAULT_USERS[0]);
+    // Demo accounts have been removed - clears entries cleanly
+    this.clearAllEntries();
   },
 
   getSelectedRegion() {

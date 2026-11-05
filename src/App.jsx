@@ -23,9 +23,6 @@ import {
 export default function App() {
   const [currentTab, setCurrentTab] = useState('home');
   const [language, setLanguage] = useState(() => storage.getLanguage());
-  const [activePersona, setActivePersona] = useState(() =>
-    storage.getActivePersona()
-  );
   const [selectedRegionId, setSelectedRegionId] = useState(() =>
     storage.getSelectedRegion()
   );
@@ -59,10 +56,6 @@ export default function App() {
   useEffect(() => {
     storage.setLanguage(language);
   }, [language]);
-
-  useEffect(() => {
-    storage.setActivePersona(activePersona);
-  }, [activePersona]);
 
   useEffect(() => {
     storage.setSelectedRegion(selectedRegionId);
@@ -193,47 +186,8 @@ export default function App() {
         setIsGpsActive(false);
         loadRegionWeather(newUser.regionId);
       }
-      if (newUser.id === 'user-rakoto') {
-        setActivePersona('rakoto');
-      } else if (newUser.id === 'user-mbolatiana') {
-        setActivePersona('mbolatiana');
-      }
     } else {
       setEntries([]);
-    }
-  };
-
-  const handlePersonaChange = (newPersona) => {
-    setActivePersona(newPersona);
-    setIsGpsActive(false);
-    if (newPersona === 'rakoto') {
-      setSelectedRegionId('ambatondrazaka');
-      loadRegionWeather('ambatondrazaka');
-      const found = storage.getUsers().find((u) => u.id === 'user-rakoto');
-      if (found) {
-        setCurrentUser(found);
-        storage.setCurrentUser(found);
-        setEntries(storage.getUserEntries(found.id));
-      }
-      audioEngine.speakConfirmation(
-        language === 'mg'
-          ? 'Miarahaba anao Rakoto, mpamboly vary ao Alaotra-Mangoro.'
-          : 'Bienvenue Rakoto, riziculteur en Alaotra-Mangoro.'
-      );
-    } else {
-      setSelectedRegionId('antsirabe');
-      loadRegionWeather('antsirabe');
-      const found = storage.getUsers().find((u) => u.id === 'user-mbolatiana');
-      if (found) {
-        setCurrentUser(found);
-        storage.setCurrentUser(found);
-        setEntries(storage.getUserEntries(found.id));
-      }
-      audioEngine.speakConfirmation(
-        language === 'mg'
-          ? 'Miarahaba anao Mbolatiana, mpamokatra legioma ao Vakinankaratra.'
-          : 'Bienvenue Mbolatiana, maraîchère en Vakinankaratra.'
-      );
     }
   };
 
@@ -293,12 +247,17 @@ export default function App() {
     audioEngine.playChime('alert');
   };
 
-  const handleResetDemo = () => {
-    storage.resetToDemo();
-    const curr = storage.getCurrentUser();
-    setCurrentUser(curr);
-    setEntries(storage.getUserEntries(curr?.id));
-    audioEngine.playChime('success');
+  const handleClearEntries = () => {
+    if (currentUser) {
+      storage.clearCurrentUserEntries(currentUser.id);
+      setEntries([]);
+      audioEngine.playChime('alert');
+      const msg =
+        language === 'mg'
+          ? 'Nofafana soa aman-tsara ny bokin\'ny fambolenao.'
+          : 'Votre journal a été vidé.';
+      audioEngine.speakConfirmation(msg);
+    }
   };
 
   if (!currentUser) {
@@ -321,8 +280,6 @@ export default function App() {
       <Header
         language={language}
         onLanguageChange={handleLanguageChange}
-        activePersona={activePersona}
-        onPersonaChange={handlePersonaChange}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
         isDarkMode={theme === 'dark'}
@@ -376,7 +333,7 @@ export default function App() {
             entries={entries}
             onOpenNewModalWithType={handleOpenNewModalWithType}
             onDeleteEntry={handleDeleteEntry}
-            onResetDemo={handleResetDemo}
+            onResetDemo={handleClearEntries}
             language={language}
             currentUser={currentUser}
           />

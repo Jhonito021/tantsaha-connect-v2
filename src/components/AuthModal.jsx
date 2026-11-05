@@ -13,8 +13,12 @@ export const AuthModal = ({
   onUserChange,
   language,
 }) => {
-  const [activeTab, setActiveTab] = useState(currentUser ? 'profile' : 'login');
   const [registeredUsers, setRegisteredUsers] = useState(() => storage.getUsers());
+  const [activeTab, setActiveTab] = useState(() => {
+    if (currentUser) return 'profile';
+    const users = storage.getUsers();
+    return users && users.length > 0 ? 'login' : 'register';
+  });
 
   // Login form state
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -305,8 +309,8 @@ export const AuthModal = ({
                 </button>
               </div>
 
-              {/* Fast 1-Tap Avatar Switcher for Offline Ease */}
-              {registeredUsers.length > 0 && (
+              {/* Fast 1-Tap Avatar Switcher if accounts exist */}
+              {registeredUsers.length > 0 ? (
                 <div>
                   <div className="text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-2">
                     {language === 'mg' ? 'Fidirana haingana amin\'ny 1 kitika' : 'Connexion rapide en 1 clic'}
@@ -331,12 +335,36 @@ export const AuthModal = ({
                     ))}
                   </div>
                 </div>
+              ) : (
+                <div className="text-center py-3 px-2 bg-stone-50 dark:bg-stone-900/60 rounded-2xl border border-stone-200">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2 text-sm">
+                    <FontAwesomeIcon icon={ICONS.userPlus} />
+                  </div>
+                  <p className="text-xs font-bold text-stone-800 mb-0.5">
+                    {language === 'mg' ? 'Tsy mbola misy kaonty voasoratra' : 'Aucun compte enregistré'}
+                  </p>
+                  <p className="text-[11px] text-stone-500 mb-2">
+                    {language === 'mg'
+                      ? 'Hisoratra anarana azafady mba hamoronana kaonty vaovao.'
+                      : 'Créez votre compte pour commencer.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('register');
+                      audioEngine.playChime('click');
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold active:scale-95 transition-all"
+                  >
+                    {language === 'mg' ? 'Hisoratra anarana' : 'Créer un compte'}
+                  </button>
+                </div>
               )}
 
               {/* Login Form */}
               <form onSubmit={handleLoginSubmit} className="space-y-3 pt-2 border-t border-stone-200">
                 <div className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-                  {language === 'mg' ? 'Na ampidiro ny mombamomba anao' : 'Ou saisissez vos identifiants'}
+                  {language === 'mg' ? 'Ampidiro ny finday na anarana' : 'Ou saisissez vos identifiants'}
                 </div>
 
                 {loginError && (
@@ -356,7 +384,7 @@ export const AuthModal = ({
                       required
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
-                      placeholder={language === 'mg' ? 'ohatra: 034 12 345 67 na Rakoto' : 'ex: 034 12 345 67 ou Rakoto'}
+                      placeholder={language === 'mg' ? 'ohatra: 034 12 345 67 na Jean' : 'ex: 034 12 345 67 ou Jean'}
                       className="w-full h-11 pl-10 pr-3 rounded-xl border border-stone-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 outline-none text-sm font-medium"
                     />
                     <FontAwesomeIcon

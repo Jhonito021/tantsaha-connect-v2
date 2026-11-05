@@ -15,8 +15,11 @@ export const AuthScreen = ({
   isDarkMode = false,
   onToggleTheme,
 }) => {
-  const [activeTab, setActiveTab] = useState('login');
   const [registeredUsers, setRegisteredUsers] = useState(() => storage.getUsers());
+  const [activeTab, setActiveTab] = useState(() => {
+    const users = storage.getUsers();
+    return users && users.length > 0 ? 'login' : 'register';
+  });
 
   // Login form state
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -263,8 +266,8 @@ export const AuthScreen = ({
         {/* TAB 1: LOGIN */}
         {activeTab === 'login' && (
           <div className="bg-white rounded-3xl p-4 sm:p-5 border border-stone-200 shadow-md space-y-4">
-            {/* 1-Tap Quick Farmer Login Cards */}
-            {registeredUsers.length > 0 && (
+            {/* Quick Login if accounts exist, or guide to register if none */}
+            {registeredUsers.length > 0 ? (
               <div>
                 <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block mb-2">
                   {language === 'mg' ? 'Fidirana haingana (Tsindrio ny sarinao)' : 'Connexion rapide en 1 clic'}
@@ -289,12 +292,36 @@ export const AuthScreen = ({
                   ))}
                 </div>
               </div>
+            ) : (
+              <div className="text-center py-3 px-2 bg-stone-50 dark:bg-stone-900/60 rounded-2xl border border-stone-200">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mx-auto mb-2 text-base">
+                  <FontAwesomeIcon icon={ICONS.userPlus} />
+                </div>
+                <p className="text-xs font-bold text-stone-800 mb-0.5">
+                  {language === 'mg' ? 'Tsy mbola misy kaonty voasoratra' : 'Aucun compte enregistré'}
+                </p>
+                <p className="text-[11px] text-stone-500 mb-2.5">
+                  {language === 'mg'
+                    ? 'Hisoratra anarana azafady mba hamoronana ny kaontinao manokana.'
+                    : 'Veuillez créer votre compte pour commencer.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('register');
+                    audioEngine.playChime('click');
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold active:scale-95 transition-all shadow-xs"
+                >
+                  {language === 'mg' ? 'Hisoratra anarana izao' : 'Créer un compte'}
+                </button>
+              </div>
             )}
 
             {/* Standard Login Form */}
             <form onSubmit={handleLoginSubmit} className="space-y-3 pt-3 border-t border-stone-100">
               <div className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-                {language === 'mg' ? 'Na ampidiro ny finday sy kaody' : 'Ou saisissez votre numéro et code'}
+                {language === 'mg' ? 'Ampidiro ny finday na anarana' : 'Saisissez vos identifiants'}
               </div>
 
               {loginError && (
@@ -314,7 +341,7 @@ export const AuthScreen = ({
                     required
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder={language === 'mg' ? 'ohatra: 034 12 345 67 na Rakoto' : 'ex: 034 12 345 67 ou Rakoto'}
+                    placeholder={language === 'mg' ? 'ohatra: 034 12 345 67 na Jean' : 'ex: 034 12 345 67 ou Jean'}
                     className="w-full h-11 pl-10 pr-3 rounded-xl border border-stone-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 outline-none text-sm font-medium"
                   />
                   <FontAwesomeIcon

@@ -38,7 +38,7 @@ export const NewEntryModal = ({
     const newEntry = {
       type,
       date,
-      userId: currentUser?.id || 'user-rakoto',
+      userId: currentUser?.id || 'tantsaha',
       authorName: currentUser?.name || 'Tantsaha',
       parcelName: parcelName.trim() || (type === 'pluie' ? 'Toerana misy anao' : 'Saha 1'),
       notes: notes.trim() || undefined,

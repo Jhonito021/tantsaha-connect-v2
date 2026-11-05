@@ -417,23 +417,4 @@ export const ADVICE_DATA = [
   },
 ];
 
-export const PERSONAS = [
-  {
-    id: 'rakoto',
-    name: 'Rakoto',
-    age: 45,
-    level: 'CEPE',
-    focus: 'Mpamboly Vary (Riziculture Alaotra)',
-    region: 'ambatondrazaka',
-    description: 'Miasa eny an-tanimbary, mampiasa finday tsotra, mila feo sy sary mazava tsy misy teny sarotra.',
-  },
-  {
-    id: 'mbolatiana',
-    name: 'Mbolatiana',
-    age: 31,
-    level: 'BEPC',
-    focus: 'Mpamokatra Legioma & Voatabia (Maraîchage Vakinankaratra)',
-    region: 'antsirabe',
-    description: 'Mamboly legioma sy voatabia, zatra mandray an-tsoratra amin\'ny kahie, mila bokin\'ny fambolena haingana.',
-  },
-];
+export const PERSONAS = [];

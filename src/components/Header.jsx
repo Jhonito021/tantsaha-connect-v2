@@ -1,13 +1,10 @@
 import React from 'react';
 import { FontAwesomeIcon, ICONS } from './FontAwesomeIcons.jsx';
-import { PERSONAS } from '../data/farmingData.js';
 import { audioEngine } from '../utils/audioVoice.js';
 
 export const Header = ({
   language,
   onLanguageChange,
-  activePersona,
-  onPersonaChange,
   soundEnabled,
   onToggleSound,
   isDarkMode = false,
@@ -18,7 +15,6 @@ export const Header = ({
   currentUser = null,
   onOpenAuthModal,
 }) => {
-  const currentPersona = PERSONAS.find((p) => p.id === activePersona) || PERSONAS[0];
 
   const handleSpeakWelcome = () => {
     const text =

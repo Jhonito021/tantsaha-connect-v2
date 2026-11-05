@@ -400,15 +400,21 @@ export const JournalView = ({
         )}
       </section>
 
-      {/* 4. Reset Demo Data */}
+      {/* 4. Storage Info & Clear Journal */}
       <div className="flex items-center justify-between pt-1 px-1 text-[11px] text-stone-500">
-        <span>💾 Local Storage</span>
-        <button
-          onClick={onResetDemo}
-          className="text-stone-500 hover:text-stone-800 underline font-medium"
-        >
-          {language === 'mg' ? 'Haverina ny ohatra' : 'Restaurer exemples'}
-        </button>
+        <span>💾 {language === 'mg' ? 'Angon-drakitra voaaro an-toerana' : 'Données locales sécurisées'}</span>
+        {entries.length > 0 && (
+          <button
+            onClick={() => {
+              if (window.confirm(language === 'mg' ? 'Tena hofafana ve ny fanamarihana rehetra ao amin\'ny bokin\'asa?' : 'Voulez-vous vraiment vider votre journal agricole ?')) {
+                onResetDemo();
+              }
+            }}
+            className="text-stone-500 hover:text-red-700 underline font-medium transition-colors"
+          >
+            {language === 'mg' ? 'Hanafoana ny bokin\'asa' : 'Vider le journal'}
+          </button>
+        )}
       </div>
     </div>
   );
