@@ -48,9 +48,23 @@ import {
   faArrowsRotate,
   faWaveSquare,
   faCrosshairs,
+  faLock,
+  faPhone,
+  faUserPlus,
+  faRightToBracket,
+  faRightFromBracket,
+  faShieldHalved,
+  faMoon,
 } from '@fortawesome/free-solid-svg-icons';
 
 export const ICONS = {
+  moon: faMoon,
+  lock: faLock,
+  phone: faPhone,
+  userPlus: faUserPlus,
+  login: faRightToBracket,
+  logout: faRightFromBracket,
+  shield: faShieldHalved,
   crosshairs: faCrosshairs,
   sun: faSun,
   cloudRain: faCloudRain,

@@ -10,6 +10,8 @@ export const HomeView = ({
   isGpsActive = false,
   isGeolocating = false,
   onTriggerGps,
+  currentUser = null,
+  onOpenAuthModal,
   onNavigate,
   onOpenNewEntry,
 }) => {
@@ -26,7 +28,38 @@ export const HomeView = ({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-6 w-full max-w-full overflow-hidden">
+    <div className="space-y-3.5 sm:space-y-5 pb-6 w-full max-w-full overflow-hidden">
+      {/* 0. FARMER PROFILE WELCOME STRIP */}
+      <div className="bg-white rounded-2xl p-3 sm:p-3.5 border border-stone-200 shadow-xs flex items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-800 flex items-center justify-center text-xl shrink-0 border border-emerald-200 shadow-xs">
+            {currentUser?.avatar || '👨‍🌾'}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs sm:text-sm font-black text-stone-900 truncate">
+                {language === 'mg' ? `Miarahaba, ${currentUser?.name || 'Tantsaha'} !` : `Bonjour, ${currentUser?.name || 'Agriculteur'} !`}
+              </span>
+              <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100/90 px-1.5 py-0.2 rounded-full shrink-0">
+                {currentUser ? (language === 'mg' ? 'Voasoratra' : 'Connecté') : (language === 'mg' ? 'Mpamangy' : 'Visiteur')}
+              </span>
+            </div>
+            <p className="text-[11px] text-stone-500 font-medium truncate mt-0.5">
+              {currentUser?.roleMg || (language === 'mg' ? 'Tsindrio hidirana na hisoratana anarana' : 'Connectez-vous ou créez votre compte')}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={onOpenAuthModal}
+          className="h-8.5 sm:h-9 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center gap-1.5 shrink-0 shadow-xs active:scale-95 transition-all"
+        >
+          <FontAwesomeIcon icon={currentUser ? ICONS.user : ICONS.login} className="text-xs" />
+          <span className="hidden xs:inline">
+            {currentUser ? (language === 'mg' ? 'Kaontiko' : 'Mon profil') : (language === 'mg' ? 'Miditra' : 'Connexion')}
+          </span>
+        </button>
+      </div>
       {/* 1. MÉTÉO SNAPSHOT WIDGET */}
       <section className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white rounded-3xl p-4 sm:p-5 shadow-lg relative overflow-hidden w-full">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />

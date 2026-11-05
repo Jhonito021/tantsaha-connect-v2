@@ -8,6 +8,8 @@ import { JournalView } from './components/JournalView.jsx';
 import { AlertsView } from './components/AlertsView.jsx';
 import { AdviceView } from './components/AdviceView.jsx';
 import { NewEntryModal } from './components/NewEntryModal.jsx';
+import { AuthModal } from './components/AuthModal.jsx';
+import { AuthScreen } from './components/AuthScreen.jsx';
 import { storage } from './utils/storage.js';
 import { audioEngine } from './utils/audioVoice.js';
 import { ALERTS_DATA, REGIONS_DATA } from './data/farmingData.js';
@@ -28,7 +30,16 @@ export default function App() {
     storage.getSelectedRegion()
   );
   const [soundEnabled, setSoundEnabled] = useState(() => storage.isSoundEnabled());
-  const [entries, setEntries] = useState(() => storage.getEntries());
+  const [theme, setTheme] = useState(() => storage.getTheme());
+
+  // Authenticated user state
+  const [currentUser, setCurrentUser] = useState(() => storage.getCurrentUser());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Private per-user journal entries
+  const [entries, setEntries] = useState(() =>
+    storage.getUserEntries(storage.getCurrentUser()?.id)
+  );
 
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
   const [modalInitialType, setModalInitialType] = useState('semis');
@@ -60,6 +71,16 @@ export default function App() {
   useEffect(() => {
     storage.setSoundEnabled(soundEnabled);
   }, [soundEnabled]);
+
+  // Sync theme changes with DOM and LocalStorage
+  useEffect(() => {
+    storage.setTheme(theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
   // Load weather by preset region
   const loadRegionWeather = useCallback(async (regionId) => {
@@ -139,7 +160,6 @@ export default function App() {
     hasAttemptedAutoGps.current = true;
 
     if (storage.isGpsAutoEnabled() && 'geolocation' in navigator) {
-      // Auto-detect location on load
       handleTriggerGeolocation(true);
     } else {
       loadRegionWeather(selectedRegionId);
@@ -154,11 +174,33 @@ export default function App() {
     setSelectedRegionId(regId);
     setIsGpsActive(false);
     loadRegionWeather(regId);
+    if (currentUser) {
+      storage.updateUser(currentUser.id, { regionId: regId });
+    }
   };
 
   const handleLanguageChange = (newLang) => {
     setLanguage(newLang);
     audioEngine.playChime('click');
+  };
+
+  const handleUserChange = (newUser) => {
+    setCurrentUser(newUser);
+    if (newUser) {
+      setEntries(storage.getUserEntries(newUser.id));
+      if (newUser.regionId) {
+        setSelectedRegionId(newUser.regionId);
+        setIsGpsActive(false);
+        loadRegionWeather(newUser.regionId);
+      }
+      if (newUser.id === 'user-rakoto') {
+        setActivePersona('rakoto');
+      } else if (newUser.id === 'user-mbolatiana') {
+        setActivePersona('mbolatiana');
+      }
+    } else {
+      setEntries([]);
+    }
   };
 
   const handlePersonaChange = (newPersona) => {
@@ -167,6 +209,12 @@ export default function App() {
     if (newPersona === 'rakoto') {
       setSelectedRegionId('ambatondrazaka');
       loadRegionWeather('ambatondrazaka');
+      const found = storage.getUsers().find((u) => u.id === 'user-rakoto');
+      if (found) {
+        setCurrentUser(found);
+        storage.setCurrentUser(found);
+        setEntries(storage.getUserEntries(found.id));
+      }
       audioEngine.speakConfirmation(
         language === 'mg'
           ? 'Miarahaba anao Rakoto, mpamboly vary ao Alaotra-Mangoro.'
@@ -175,6 +223,12 @@ export default function App() {
     } else {
       setSelectedRegionId('antsirabe');
       loadRegionWeather('antsirabe');
+      const found = storage.getUsers().find((u) => u.id === 'user-mbolatiana');
+      if (found) {
+        setCurrentUser(found);
+        storage.setCurrentUser(found);
+        setEntries(storage.getUserEntries(found.id));
+      }
       audioEngine.speakConfirmation(
         language === 'mg'
           ? 'Miarahaba anao Mbolatiana, mpamokatra legioma ao Vakinankaratra.'
@@ -191,6 +245,17 @@ export default function App() {
     } else {
       audioEngine.stopAudio();
     }
+  };
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    audioEngine.playChime('click');
+    const msg =
+      language === 'mg'
+        ? (nextTheme === 'dark' ? 'Lohahevitra maizina mavitrika.' : 'Lohahevitra mazava mavitrika.')
+        : (nextTheme === 'dark' ? 'Mode sombre activé.' : 'Mode clair activé.');
+    audioEngine.speakConfirmation(msg);
   };
 
   const handleRefreshWeather = async () => {
@@ -218,24 +283,40 @@ export default function App() {
   };
 
   const handleSaveEntry = (newEntryData) => {
-    const saved = storage.addEntry(newEntryData);
-    setEntries((prev) => [saved, ...prev]);
+    storage.addEntry(newEntryData, currentUser);
+    setEntries(storage.getUserEntries(currentUser?.id));
   };
 
   const handleDeleteEntry = (id) => {
     storage.deleteEntry(id);
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+    setEntries(storage.getUserEntries(currentUser?.id));
     audioEngine.playChime('alert');
   };
 
   const handleResetDemo = () => {
     storage.resetToDemo();
-    setEntries(storage.getEntries());
+    const curr = storage.getCurrentUser();
+    setCurrentUser(curr);
+    setEntries(storage.getUserEntries(curr?.id));
     audioEngine.playChime('success');
   };
 
+  if (!currentUser) {
+    return (
+      <AuthScreen
+        onLoginSuccess={handleUserChange}
+        language={language}
+        onLanguageChange={handleLanguageChange}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+        isDarkMode={theme === 'dark'}
+        onToggleTheme={handleToggleTheme}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900 pb-20 md:pb-8 selection:bg-emerald-600 selection:text-white w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-stone-100 dark:bg-[#0c120f] flex flex-col text-stone-900 dark:text-stone-100 pb-20 md:pb-8 selection:bg-emerald-600 selection:text-white w-full max-w-full overflow-x-hidden transition-colors">
       {/* 1. Accessible Top App Bar */}
       <Header
         language={language}
@@ -244,9 +325,13 @@ export default function App() {
         onPersonaChange={handlePersonaChange}
         soundEnabled={soundEnabled}
         onToggleSound={handleToggleSound}
+        isDarkMode={theme === 'dark'}
+        onToggleTheme={handleToggleTheme}
         isGpsActive={isGpsActive}
         isGeolocating={isGeolocating}
         onTriggerGps={() => handleTriggerGeolocation(false)}
+        currentUser={currentUser}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* 2. Main View Container */}
@@ -260,6 +345,8 @@ export default function App() {
             isGpsActive={isGpsActive}
             isGeolocating={isGeolocating}
             onTriggerGps={() => handleTriggerGeolocation(false)}
+            currentUser={currentUser}
+            onOpenAuthModal={() => setIsAuthModalOpen(true)}
             onNavigate={(tab) => {
               setCurrentTab(tab);
               audioEngine.playChime('click');
@@ -291,6 +378,7 @@ export default function App() {
             onDeleteEntry={handleDeleteEntry}
             onResetDemo={handleResetDemo}
             language={language}
+            currentUser={currentUser}
           />
         )}
 
@@ -322,6 +410,16 @@ export default function App() {
         onSave={handleSaveEntry}
         language={language}
         initialType={modalInitialType}
+        currentUser={currentUser}
+      />
+
+      {/* 6. Authentication & Farmer Profile Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        onUserChange={handleUserChange}
+        language={language}
       />
     </div>
   );

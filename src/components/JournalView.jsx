@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon, ICONS, getCropIcon } from './FontAwesomeIcons.jsx';
 import { audioEngine } from '../utils/audioVoice.js';
+import { storage } from '../utils/storage.js';
 
 export const JournalView = ({
   entries,
@@ -8,11 +9,16 @@ export const JournalView = ({
   onDeleteEntry,
   onResetDemo,
   language,
+  currentUser = null,
 }) => {
   const [activeFilter, setActiveFilter] = useState('all');
+  const [showAllFarmers, setShowAllFarmers] = useState(false);
+
+  const allEntries = storage.getAllEntries();
+  const baseEntries = showAllFarmers ? allEntries : entries;
 
   const filteredEntries =
-    activeFilter === 'all' ? entries : entries.filter((e) => e.type === activeFilter);
+    activeFilter === 'all' ? baseEntries : baseEntries.filter((e) => e.type === activeFilter);
 
   const handleSpeakEntry = (entry) => {
     let text = '';
@@ -35,12 +41,69 @@ export const JournalView = ({
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-8 w-full max-w-full overflow-hidden">
+    <div className="space-y-4 sm:space-y-5 pb-8 w-full max-w-full overflow-hidden">
+      {/* 0. USER PRIVATE DATA OWNERSHIP BANNER */}
+      <div className="bg-gradient-to-r from-emerald-50 via-white to-emerald-50/50 rounded-2xl p-3 sm:p-3.5 border border-emerald-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-700 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+            {currentUser?.avatar || '👨‍🌾'}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-display font-black text-xs sm:text-sm text-stone-900 truncate">
+                {language === 'mg'
+                  ? `Bokin'asa manokan'i ${currentUser?.name || 'Tantsaha'}`
+                  : `Journal personnel de ${currentUser?.name || 'Agriculteur'}`}
+              </span>
+              <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-full shrink-0 flex items-center gap-1">
+                <FontAwesomeIcon icon={ICONS.lock} className="text-[8px]" />
+                <span>{language === 'mg' ? 'Angon-drakitra manokana' : 'Données privées'}</span>
+              </span>
+            </div>
+            <p className="text-[11px] text-stone-500 font-medium truncate mt-0.5">
+              {language === 'mg'
+                ? 'Ianao irery no tompon\'ireto fanamarihana sy fambolena ireto'
+                : 'Vos enregistrements sont strictement réservés à votre compte'}
+            </p>
+          </div>
+        </div>
+
+        {/* Privacy Scope Toggle */}
+        <div className="flex items-center bg-stone-100 p-0.5 rounded-xl border border-stone-200 text-xs shrink-0 self-start sm:self-auto">
+          <button
+            onClick={() => {
+              setShowAllFarmers(false);
+              audioEngine.playChime('click');
+            }}
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+              !showAllFarmers
+                ? 'bg-emerald-700 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>{language === 'mg' ? `Asako ihany (${entries.length})` : `Mes données (${entries.length})`}</span>
+          </button>
+          <button
+            onClick={() => {
+              setShowAllFarmers(true);
+              audioEngine.playChime('click');
+            }}
+            className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+              showAllFarmers
+                ? 'bg-emerald-700 text-white shadow-xs'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            <span>{language === 'mg' ? `Rehetra (${allEntries.length})` : `Tous (${allEntries.length})`}</span>
+          </button>
+        </div>
+      </div>
+
       {/* 1. FOUR GIANT ACTION BUTTONS */}
       <section className="w-full">
         <div className="mb-2 px-0.5">
           <h2 className="font-display font-black text-base sm:text-xl text-stone-900">
-            {language === 'mg' ? 'Bokin\'ny fambolena' : 'Journal des cultures'}
+            {language === 'mg' ? 'Fampidirana asa vaovao' : 'Enregistrer une observation'}
           </h2>
           <p className="text-[11px] sm:text-xs text-stone-500 font-medium">
             {language === 'mg' ? 'Inona no asa nataonao androany?' : 'Sélectionnez une action rapide'}
@@ -268,6 +331,14 @@ export const JournalView = ({
 
                       <div className="flex items-center gap-1.5 text-[11px] text-stone-500 mt-0.5 flex-wrap font-medium">
                         <span className="font-bold text-stone-700">{entry.date}</span>
+                        {entry.authorName && (
+                          <>
+                            <span>·</span>
+                            <span className="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded-md">
+                              👤 {entry.authorName}
+                            </span>
+                          </>
+                        )}
                         {entry.parcelName && (
                           <>
                             <span>·</span>

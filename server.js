@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,6 +15,17 @@ const OPENWEATHER_API_KEY =
   process.env.OPENWEATHER_API_KEY || '8ece38b6e1541abd23d294446407d466';
 
 app.use(express.json());
+
+// Enable CORS so localhost requests are never blocked
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // In-memory weather cache (15 minutes TTL)
 const weatherCache = new Map();
@@ -104,9 +116,21 @@ function generateAgriculturalAdvice(condition, tempMax, tempMin, rainChance, hum
 // Weather Proxy Route with region or GPS coordinates support
 app.get('/api/weather', async (req, res) => {
   try {
-    const latParam = req.query.lat ? parseFloat(req.query.lat) : null;
-    const lonParam = req.query.lon ? parseFloat(req.query.lon) : null;
-    const isCustomCoords = !isNaN(latParam) && !isNaN(lonParam);
+    const rawLat = req.query.lat;
+    const rawLon = req.query.lon;
+    const hasLat = rawLat !== undefined && rawLat !== null && String(rawLat).trim() !== '';
+    const hasLon = rawLon !== undefined && rawLon !== null && String(rawLon).trim() !== '';
+
+    const latParam = hasLat ? parseFloat(rawLat) : NaN;
+    const lonParam = hasLon ? parseFloat(rawLon) : NaN;
+
+    const isCustomCoords =
+      Number.isFinite(latParam) &&
+      Number.isFinite(lonParam) &&
+      latParam >= -90 &&
+      latParam <= 90 &&
+      lonParam >= -180 &&
+      lonParam <= 180;
 
     let region;
     let cacheKey;
@@ -285,22 +309,83 @@ app.get('/api/weather', async (req, res) => {
 
     res.json(responsePayload);
   } catch (error) {
-    console.error('Error fetching weather:', error);
-    res.status(500).json({
-      error: 'Failed to fetch live weather data',
-      message: error.message,
-    });
+    console.error('Error fetching weather:', error.message);
+
+    // Provide safe fallback data so client never crashes
+    const regionId = ((req.query.region) || 'ambatondrazaka').toLowerCase();
+    const region = REGION_COORDS[regionId] || REGION_COORDS['ambatondrazaka'];
+    const now = new Date();
+
+    const fallbackPayload = {
+      id: region.id,
+      nameMg: region.nameMg,
+      nameFr: region.nameFr,
+      description: region.description,
+      granaryType: region.granaryType,
+      today: {
+        date: now.toISOString().split('T')[0],
+        dayNameMg: getDayNameMg(now),
+        dayNameFr: getDayNameFr(now),
+        condition: 'sunny',
+        tempMax: 27,
+        tempMin: 18,
+        rainChance: 20,
+        humidity: 62,
+        windSpeed: 10,
+        farmingAdviceMg: 'Toetrandro malefaka: mety tsara amin\'ny asa fambolena sy fanaraha-maso.',
+        farmingAdviceFr: 'Temps doux et clément : propice aux travaux champêtres réguliers.',
+        audioTextMg: `Toetrandro ao ${region.nameMg}. Hafanana 27 degre. Mety tsara amin'ny fambolena.`,
+      },
+      forecast: [
+        {
+          date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+          dayNameMg: getDayNameMg(new Date(Date.now() + 86400000)),
+          dayNameFr: getDayNameFr(new Date(Date.now() + 86400000)),
+          condition: 'partlyCloudy',
+          tempMax: 26,
+          tempMin: 17,
+          rainChance: 30,
+          humidity: 65,
+          windSpeed: 12,
+          farmingAdviceMg: 'Masoandro sy rahona: tsara hanohizana ny asa.',
+          farmingAdviceFr: 'Éclaircies : idéal pour poursuivre les travaux de sarclage.',
+          audioTextMg: 'Vinavina rahampitso: hafanana enina amby roapolo degre.',
+        },
+        {
+          date: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0],
+          dayNameMg: getDayNameMg(new Date(Date.now() + 86400000 * 2)),
+          dayNameFr: getDayNameFr(new Date(Date.now() + 86400000 * 2)),
+          condition: 'rainy',
+          tempMax: 24,
+          tempMin: 16,
+          rainChance: 65,
+          humidity: 75,
+          windSpeed: 14,
+          farmingAdviceMg: 'Mety hisy orana malefaka: manondraka ny tany.',
+          farmingAdviceFr: 'Pluie probable : bénéfique pour l\'irrigation naturelle.',
+          audioTextMg: 'Afak\'ampitso: mety hisy orana malefaka.',
+        },
+      ],
+      isLive: false,
+      lastUpdated: 'Toetrandro ifotony (Hors-ligne)',
+    };
+
+    res.json(fallbackPayload);
   }
 });
 
 // Production static file serving vs Development Vite middleware
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
+  const httpServer = http.createServer(app);
 
   if (!isProd) {
     const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: process.env.DISABLE_HMR !== 'true' ? { server: httpServer } : false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -311,9 +396,34 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Tantsaha Connect server running at http://0.0.0.0:${PORT}`);
+  let currentPort = PORT;
+  const maxAttempts = 5;
+
+  function tryListen() {
+    httpServer.listen(currentPort, '0.0.0.0', () => {
+      console.log(`\n  🌱 Tantsaha Connect - Fampiharana ho an'ny Tantsaha`);
+      console.log(`  --------------------------------------------------`);
+      console.log(`  ➜ Local:   http://localhost:${currentPort}`);
+      console.log(`  ➜ Network: http://127.0.0.1:${currentPort}\n`);
+    });
+  }
+
+  httpServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE' && currentPort < PORT + maxAttempts) {
+      console.warn(`⚠️  Le port ${currentPort} est déjà occupé. Tentative sur http://localhost:${currentPort + 1}...`);
+      currentPort++;
+      setTimeout(tryListen, 250);
+    } else {
+      console.error(`\n❌ Erreur de démarrage du serveur:`, err.message);
+      if (err.code === 'EADDRINUSE') {
+        console.error(`💡 Le port ${PORT} est déjà utilisé par une autre application.`);
+        console.error(`👉 Solution : Libérez le port ou lancez avec : PORT=3005 npm run dev\n`);
+      }
+      process.exit(1);
+    }
   });
+
+  tryListen();
 }
 
 startServer();

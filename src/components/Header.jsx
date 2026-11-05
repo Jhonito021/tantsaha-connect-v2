@@ -10,9 +10,13 @@ export const Header = ({
   onPersonaChange,
   soundEnabled,
   onToggleSound,
+  isDarkMode = false,
+  onToggleTheme,
   isGpsActive = false,
   isGeolocating = false,
   onTriggerGps,
+  currentUser = null,
+  onOpenAuthModal,
 }) => {
   const currentPersona = PERSONAS.find((p) => p.id === activePersona) || PERSONAS[0];
 
@@ -25,7 +29,7 @@ export const Header = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 w-full max-w-full overflow-hidden">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-stone-200 w-full max-w-full overflow-hidden transition-colors">
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2">
         {/* Main Row: Brand + Essential Controls */}
         <div className="flex items-center justify-between gap-2 min-w-0">
@@ -49,7 +53,7 @@ export const Header = ({
             </div>
           </div>
 
-          {/* Quick Actions (Audio, Lang, Sound) */}
+          {/* Quick Actions (Audio, Lang, Theme, Sound) */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Audio Voice Welcome */}
             <button
@@ -76,6 +80,24 @@ export const Header = ({
               <span className={language === 'fr' ? 'text-emerald-700 font-extrabold' : 'text-stone-400'}>FR</span>
             </button>
 
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={onToggleTheme}
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border transition-all active:scale-95 ${
+                isDarkMode
+                  ? 'bg-amber-400/20 text-amber-300 border-amber-500/40 hover:bg-amber-400/30'
+                  : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-200'
+              }`}
+              title={
+                isDarkMode
+                  ? (language === 'mg' ? 'Hiverina amin\'ny mazava' : 'Passer en mode clair')
+                  : (language === 'mg' ? 'Hamadika ho maizina (Mode sombre)' : 'Passer en mode sombre')
+              }
+              aria-label="Mode sombre / Mode clair"
+            >
+              <FontAwesomeIcon icon={isDarkMode ? ICONS.sun : ICONS.moon} className="text-xs sm:text-sm" />
+            </button>
+
             {/* Sound Toggle */}
             <button
               onClick={onToggleSound}
@@ -92,42 +114,30 @@ export const Header = ({
           </div>
         </div>
 
-        {/* Persona Switcher Strip (Fits smoothly without stretching the page) */}
-        <div className="flex items-center justify-between gap-2 mt-2 pt-1.5 border-t border-stone-100">
-          {/* Persona selector pills */}
-          <div className="flex items-center bg-stone-100 p-0.5 rounded-xl border border-stone-200 text-xs">
+        {/* User Account Bar & Quick Controls Strip */}
+        <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-stone-100 min-w-0">
+          {/* User Account Button (Tap to open Login/Register/Profile) */}
+          <div className="flex items-center gap-1.5 min-w-0">
             <button
               onClick={() => {
-                onPersonaChange('rakoto');
+                onOpenAuthModal?.();
                 audioEngine.playChime('click');
               }}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                activePersona === 'rakoto'
-                  ? 'bg-white text-emerald-950 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
+              className="h-7.5 px-2.5 rounded-xl bg-stone-100 hover:bg-stone-200/80 border border-stone-200 text-stone-800 text-xs font-bold flex items-center gap-1.5 shadow-xs active:scale-95 transition-all min-w-0"
+              title={language === 'mg' ? 'Kaonty sy fisoratana anarana' : 'Compte et profil'}
             >
-              <span className="mr-1">🌾</span>
-              <span>Rakoto</span>
-            </button>
-            <button
-              onClick={() => {
-                onPersonaChange('mbolatiana');
-                audioEngine.playChime('click');
-              }}
-              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                activePersona === 'mbolatiana'
-                  ? 'bg-white text-emerald-950 shadow-xs'
-                  : 'text-stone-600 hover:text-stone-900'
-              }`}
-            >
-              <span className="mr-1">🍅</span>
-              <span>Mbolatiana</span>
+              <span className="text-sm shrink-0">{currentUser?.avatar || '👨‍🌾'}</span>
+              <span className="truncate max-w-[95px] sm:max-w-[130px] font-extrabold text-stone-900">
+                {currentUser?.name || (language === 'mg' ? 'Miditra' : 'Connexion')}
+              </span>
+              <span className="text-[9px] font-extrabold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded-full shrink-0">
+                {currentUser ? (language === 'mg' ? 'Kaonty' : 'Profil') : (language === 'mg' ? 'Miditra' : 'Connexion')}
+              </span>
             </button>
           </div>
 
-          {/* Persona context & GPS / offline badge */}
-          <div className="flex items-center gap-2 min-w-0 shrink-0">
+          {/* GPS button & Offline badge */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {onTriggerGps && (
               <button
                 onClick={onTriggerGps}

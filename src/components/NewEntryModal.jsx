@@ -9,6 +9,7 @@ export const NewEntryModal = ({
   onSave,
   language,
   initialType = 'semis',
+  currentUser = null,
 }) => {
   const [type, setType] = useState(initialType);
   const [selectedCropId, setSelectedCropId] = useState('vary');
@@ -37,6 +38,8 @@ export const NewEntryModal = ({
     const newEntry = {
       type,
       date,
+      userId: currentUser?.id || 'user-rakoto',
+      authorName: currentUser?.name || 'Tantsaha',
       parcelName: parcelName.trim() || (type === 'pluie' ? 'Toerana misy anao' : 'Saha 1'),
       notes: notes.trim() || undefined,
     };

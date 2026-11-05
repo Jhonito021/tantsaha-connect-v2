@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -16,14 +18,133 @@ html, body, #root {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   
+  html.dark body {
+    background-color: #0c120f;
+    color: #f5f5f4;
+  }
+
   h1, h2, h3, .font-display {
     font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
 
-/* Custom scrollbar for mobile comfort */
+/* Comprehensive Dark Mode Scoped Palette */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0c120f !important;
+  color: #f5f5f4 !important;
+}
+
+html.dark .bg-white {
+  background-color: #141d18 !important;
+  color: #f5f5f4;
+}
+
+html.dark .bg-stone-50 {
+  background-color: #19241e !important;
+}
+
+html.dark .bg-stone-100 {
+  background-color: #0c120f !important;
+}
+
+html.dark .bg-stone-200 {
+  background-color: #202e26 !important;
+}
+
+html.dark .bg-stone-200\/80 {
+  background-color: rgba(32, 46, 38, 0.85) !important;
+}
+
+html.dark header.bg-white\/95 {
+  background-color: rgba(14, 21, 17, 0.96) !important;
+  border-color: #233329 !important;
+}
+
+html.dark nav.bg-white\/95 {
+  background-color: rgba(14, 21, 17, 0.96) !important;
+  border-color: #233329 !important;
+}
+
+html.dark .border-stone-200,
+html.dark .border-stone-100,
+html.dark .border-stone-300 {
+  border-color: #233329 !important;
+}
+
+html.dark .text-stone-900 {
+  color: #f5f5f4 !important;
+}
+
+html.dark .text-stone-800 {
+  color: #e7e5e4 !important;
+}
+
+html.dark .text-stone-700 {
+  color: #d6d3d1 !important;
+}
+
+html.dark .text-stone-600 {
+  color: #a8a29e !important;
+}
+
+html.dark .text-stone-500 {
+  color: #9ca3af !important;
+}
+
+/* Form controls in dark mode */
+html.dark input[type="text"],
+html.dark input[type="password"],
+html.dark input[type="tel"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark select,
+html.dark textarea {
+  background-color: #18231d !important;
+  border-color: #2b3d32 !important;
+  color: #ffffff !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #798a80 !important;
+}
+
+/* Secondary & pill buttons in dark mode */
+html.dark .bg-emerald-50 {
+  background-color: rgba(6, 78, 59, 0.25) !important;
+  border-color: rgba(5, 150, 105, 0.4) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark .text-emerald-800 {
+  color: #6ee7b7 !important;
+}
+
+html.dark .text-emerald-950 {
+  color: #a7f3d0 !important;
+}
+
+html.dark .bg-emerald-100\/90,
+html.dark .bg-emerald-100 {
+  background-color: rgba(6, 78, 59, 0.45) !important;
+  color: #6ee7b7 !important;
+}
+
+html.dark .shadow-xs,
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -40,4 +161,12 @@ html, body, #root {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(120, 113, 108, 0.5);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(110, 231, 183, 0.2);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(110, 231, 183, 0.4);
 }
